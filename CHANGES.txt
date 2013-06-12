@@ -1,1 +1,2 @@
+v0.1.01, 2013/06/12 -- Update to support Twitter API 1.1
 v0.1, 2013/05/21 -- initial release

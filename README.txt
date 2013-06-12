@@ -15,7 +15,7 @@ Quick Start
 1. The system requires the following prerequisites:
 * python 2.65 (python 2.7.3 is also tested)
 * ujson (https://pypi.python.org/pypi/ujson) 
-* twitter library (https://github.com/bear/python-twitter)
+* twython library (git://github.com/ryanmcgrath/twython.git)
 * liblinear (http://www.csie.ntu.edu.tw/~cjlin/cgi-bin/liblinear.cgi?+http://www.csie.ntu.edu.tw/~cjlin/liblinear+zip)
 
 

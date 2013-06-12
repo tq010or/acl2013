@@ -1,33 +1,35 @@
 #!/usr/bin/env python
 """
-Oauth-enabled Twitter adapter
+Oauth-enabled Twitter adapter (v1.1)
 """
 
 
 import os
 pkg_path = os.environ["geoloc"]
 import ujson as json
-import twitter
+from twython import Twython
 from geoloc.util import tokeniser, lib_grid_search, lib_util, lib_log
 
 
-#TODO: Add your credential information in the following file.
-credential_obj = open("{0}/data/credential.txt".format(pkg_path)).readlines()
+#TODO: anonymise the following secret.
+credential_obj = cPickle.load(open("{0}/data/credential.cpkl".format(pkg_path)))
 consumer_token = credential_obj[0]
 consumer_secret = credential_obj[1]
 access_token = credential_obj[2]
 access_secret = credential_obj[3]
 
-api = twitter.Api(consumer_key = consumer_token,
-        consumer_secret = consumer_secret,
-        access_token_key = access_token,
-        access_token_secret = access_secret)
+utl_endpoint = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+dm_endpoint = "https://api.twitter.com/1.1/direct_messages/new.json"
+
+api = Twython(consumer_token, consumer_secret, access_token, access_secret)
+#api = twitter.Api(consumer_key = consumer_token, consumer_secret = consumer_secret, access_token_key = access_token, access_token_secret = access_secret)
 
 t_tokeniser = tokeniser.MicroTokeniser()
 
 
 def post_direct_message(receiver_sname, dm):
-    return api.PostDirectMessage(receiver_sname, dm)
+    params = {"screen_name":receiver_sname, "text":dm}
+    return api.post(dm_endpoint, params)
 
 
 def anonymise_text(text):
@@ -181,12 +183,15 @@ def parse_user_timeline(input_data):
     err_msg = None
     if isinstance(input_data, basestring): # Crawl and parse up to 200 recent statuses from user timeline using Oauth
         try:
-            input_data = api.GetUserTimeline(screen_name = input_data, count = 200)
-        except twitter.TwitterError:
+            params = {"screen_name":input_data, "count":200}
+            input_data = api.get(utl_endpoint, params)
+        except TwythonError:
             err_msg = "Please check <b>" + input_data  + "</b> is correctly spelt and not protected."
             return (None, err_msg) 
         else:
-            return distill_data(input_data, simplify_twitter_obj)
+            #return distill_data(input_data, simplify_twitter_obj)
+            #NOTE: twython JSON library support JSON inherently
+            return distill_data(input_data, simplify_twitter_json)
     elif isinstance(input_data, list):
         return distill_data(input_data, simplify_twitter_json)
     else:
@@ -196,4 +201,4 @@ def parse_user_timeline(input_data):
 
 
 if __name__ == "__main__":
-    print api.VerifyCredentials()
+    pass
