@@ -8,15 +8,21 @@ import os
 pkg_path = os.environ["geoloc"]
 import ujson as json
 from twython import Twython
+import twython
 from geoloc.util import tokeniser, lib_grid_search, lib_util, lib_log
 
 
 #TODO: anonymise the following secret.
-credential_obj = cPickle.load(open("{0}/data/credential.cpkl".format(pkg_path)))
-consumer_token = credential_obj[0]
-consumer_secret = credential_obj[1]
-access_token = credential_obj[2]
-access_secret = credential_obj[3]
+#credential_obj = cPickle.load(open("{0}/data/credential.cpkl".format(pkg_path)))
+#consumer_token = credential_obj[0]
+#consumer_secret = credential_obj[1]
+#access_token = credential_obj[2]
+#access_secret = credential_obj[3]
+
+consumer_token = "CDMrxqmp0HLBoFqcEUSAg"
+consumer_secret = "wizp69noHkCQlzhiytPLmcXLPE0dGdsSdMgV3vY2A"
+access_token = "595385991-ozx9LnS6Ovfeu3ruXQ2VnpmlaCUkCQlmdwueunoU"
+access_secret = "yhU8q9DvNWJTvISZshpldEXR4GP92ETZ0vJwaOq8"
 
 utl_endpoint = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 dm_endpoint = "https://api.twitter.com/1.1/direct_messages/new.json"
@@ -185,7 +191,7 @@ def parse_user_timeline(input_data):
         try:
             params = {"screen_name":input_data, "count":200}
             input_data = api.get(utl_endpoint, params)
-        except TwythonError:
+        except twython.exceptions.TwythonError:
             err_msg = "Please check <b>" + input_data  + "</b> is correctly spelt and not protected."
             return (None, err_msg) 
         else:
