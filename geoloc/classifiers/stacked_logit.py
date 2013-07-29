@@ -44,24 +44,24 @@ def parse_input(data):
     try:
         assert(isinstance(data, basestring))
         data = json.loads(data.strip()) 
-        assert(isinstance(data, list))
     except AssertionError:
         err_msg = "Invalid input data format"
-        lib_log.error("{0} {1}".format(err_msg, data))
+        #err_msg = "Invalid input data format: {0}".format(data)
         return (None, err_msg)
     except ValueError:
         try:
             assert(len(data) <= 15) # maiximum twitter screen name length
         except AssertionError:
             err_msg = "User screen name exceeds 15 characters"
-            lib_log.error("{0} {1}".format(err_msg, data))
+            #err_msg = "User screen name exceeds 15 characters {0}".format(data)
             return (None, err_msg)
         else:
             return (data, err_msg) # return screen name
     else:
         gt_dict, err_msg = twitter_adapter.parse_user_timeline(data) # return parsed user timeline data
         if err_msg:
-            lib_log.error("{0} {1}".format(err_msg, data))
+            #err_msg = "{0} {1}".format(err_msg, data)
+            return (None, err_msg)
         return (gt_dict, err_msg)
 
 
@@ -79,21 +79,22 @@ def geolocate(data, enable_cache = True):
     gt_dict = None #JSON format result
     err_msg = None
     parsed_data, err_msg = parse_input(data)
+
     if isinstance(parsed_data, basestring):
         sname = parsed_data
     elif isinstance(parsed_data, dict):
         gt_dict = parsed_data
         sname = parsed_data["sname"]
     else:
-        assert(err_msg and not parsed_data)
         gt_dict = {"error":err_msg}
+        err_msg = "{0} {1}".format(err_msg, data)
+        lib_log.error(err_msg)
         return gt_dict
     
     sname = sname.lower()
     print "Predict:", sname
 
     # using cache?
-    #TODO: when cached files are larger, this becomes problemtic.
     if enable_cache:
         cached = seek_cache(sname) 
         if cached:
@@ -103,9 +104,11 @@ def geolocate(data, enable_cache = True):
     if not gt_dict:
         gt_dict, err_msg = twitter_adapter.parse_user_timeline(sname)
         if err_msg:
-            assert(not gt_dict)
             gt_dict = {"error":err_msg}
+            err_msg = "{0} {1}".format(err_msg, sname)
+            lib_log.error(err_msg)
             return gt_dict
+    
 
     # sequential classifier
     text_pred = text_decoder.predict(feature_adapter.extract_text_features(gt_dict["tweets"]))
