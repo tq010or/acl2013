@@ -4,8 +4,9 @@ Geolocation feature adapter
 """
 
 import ujson as json
-
-liw_set = set(json.load(open("../data/world.englang.optimised.fea.json")))
+import os
+pkg_path = os.environ["geoloc"]
+liw_set = set(json.load(open("{0}/data/world.englang.optimised.fea.json".format(pkg_path))))
 
 def extract_text_features(tweets):
     fea_dict = dict()

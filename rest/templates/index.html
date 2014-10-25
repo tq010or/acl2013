@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text-based Geolocation Prediction</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <center>
+    <ul class='tabs'>
+        <li><a href='#text'>Input plain text</a></li>
+        <li><a href='#user'>Input Twitter user screen name</a></li>
+        <li><a href='#report'>Live report</a></li>
+    </ul>
+    <div id='text' class="tab_content">
+        <p>Input plain text for geolocation prediction</p>
+        <textarea id="text_input" rows="5" cols="80" maxlength="10000" placeholder="(up to 10K characters)"></textarea>
+        </br>
+        <input id="text_submit" type="submit" value="Geolocate">
+    </div>
+    <div id='user' class="tab_content">
+        <p>Input a public Twitter user's screenname for geolocation prediction</p>
+        <input id="user_input" maxlength="10000" placeholder="(e.g., @BarackObama)"></textarea>
+        </br>
+        <input id="user_submit" type="submit" value="Geolocate">
+    </div>
+    <div id='report' class="tab_content">
+        <p>
+        This is a live report page. The motivation is to evaluate the geolocation system accuracy over time.
+        The system monitors Twitter Streaming API to identify users with geotagged tweets, then it crawls up-to 200 recent tweets from users and predicts the users' geolocations on basis of text data.
+        The geotagged tweets refer to tweets with GPS coordinates embedded in the tweet JSON metadata. 
+        The system currently makes use of tweet text, user declared location and user declared timezone information for location prediction.
+        We only show users with at least 10 geotagged tweets and more than 50% of geotagged tweets are from one region.
+        This ensures GPS-derived user ground truth locations in high quality (although maybe biased).
+        </p>
+    </div>
+    </br>
+    <div id="map"></div>
+    </center>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="{{ url_for('static', filename='js/geo_icon.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+

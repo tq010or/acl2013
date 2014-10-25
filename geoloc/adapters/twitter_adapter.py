@@ -6,6 +6,7 @@ Oauth-enabled Twitter adapter (v1.1)
 
 import os
 pkg_path = os.environ["geoloc"]
+import cPickle
 import ujson as json
 from twython import Twython
 import twython
@@ -13,7 +14,8 @@ from geoloc.util import tokeniser, lib_grid_search, lib_util
 
 
 #TODO: anonymise the following secret.
-credential_obj = cPickle.load(open("{0}/data/credential.cpkl".format(pkg_path)))
+#credential_obj = cPickle.load(open("{0}/data/credential.cpkl".format(pkg_path)))
+credential_obj = [l.strip() for l in open("{0}/data/credential.txt".format(pkg_path))]
 consumer_token = credential_obj[0]
 consumer_secret = credential_obj[1]
 access_token = credential_obj[2]
