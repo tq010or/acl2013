@@ -1,42 +1,110 @@
 
 var map = null;
 var result_json = null;
+var json_obj = null;
+var timer = null;
 var marker_dict = {};
 
+var info_dict = {
+    "BUSY": "Prediction in progress ...",
+    "REST": "REST result is null",
+    "OTHER": "Unknown error"
+};
+
+var TIMEOUT = 5000;
+var REPORT_SIZE = 1;
+var last_time_stamp = null;
+
 $(document).ready(function(){
-    set_tab_status();
-    set_map();
+    init();
     bind_geolocate();
-    bind_report();
 });
 
+//add a new end with function
+String.prototype.endswith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+
+function init(){
+    set_tab_status();
+    set_init_controls();
+    set_map();
+}
+
+function set_init_controls(){
+    $(document).ajaxComplete(function(){
+        $(".pred_result").text("");
+    });
+}
+
+function unbind_report(){
+    clearTimeout(timer);
+}
+
 function bind_report(){
-    //TODO: perodically query server for results
-    //
+    $.post('/report', 
+            {last_time_stamp: last_time_stamp},
+            function(data, textStatus){
+                var report_obj = JSON.parse(data);
+                last_time_stamp = report_obj["last_time_stamp"];
+                //TODO: add pred results into lists
+                var $items = $('#report_list').children();
+                if ( $items.length > REPORT_SIZE) 
+                    $items[$items.length - 1].remove();
+                $("#report_list").prepend(
+                        $('<li>').append(
+                                $('<span>').append(last_time_stamp)
+                                ));
+                console.log(last_time_stamp);
+                //TODO: update stats, using D3 or other visualisation tools?
+                timer = setTimeout(bind_report, TIMEOUT);
+            });
 }
 
 function bind_geolocate(){
     result_json = null;
     $("#text_submit").bind('click', function(){
         console.log($("#text_input").val());
+        $('#text_result').text(info_dict["BUSY"]);
         $.post('/text', 
                 {text: $("#text_input").val()},
                 function(data, textStatus){
                     result_json = data;
-                    if( result_json != null ) 
-                        update_results(result_json);
+                    if( result_json != null ){
+                        json_obj = JSON.parse(result_json);
+                        if ( json_obj["error"] ){
+                            $('#text_result').text(json_obj["error"]);
+                        }else{
+                            update_results(result_json);
+                            $('#text_result').text(json_obj["pc"]);
+                            //$('#text_result').text(json_obj["summary"]);
+                        }
+                    }else{
+                        $('#text_result').text(info_dict["REST"]);
+                    }
                 });
     });
     $("#user_submit").bind('click', function(){
         console.log($("#user_input").val());
+        $('#user_result').text(info_dict["BUSY"]);
         $.post('/user', 
                 {user: $("#user_input").val()},
                 function(data, textStatus){
                     result_json = data;
-                    if( result_json != null ) 
-                        update_results(result_json);
+                    if( result_json != null ) {
+                        json_obj = JSON.parse(result_json);
+                        if ( json_obj["error"] ){
+                            $('#user_busy').text(json_obj["error"]);
+                        }else{
+                            $('#user_result').text(json_obj["pc"]);
+                            update_results(result_json);
+                        }
+                    }else{
+                        $('#user_busy').text(info_dict["REST"]);
+                    }
                 });
     });
+
 }
 
 function remove_markers(){
@@ -50,7 +118,6 @@ function remove_markers(){
 function create_markers(){
     console.log("create markers");
     var bounds = [];
-    var json_obj = JSON.parse(result_json);
     var footprints = json_obj['footprints'];
     if (footprints != undefined){
         for( var i = 0; i < footprints.length; ++i ){
@@ -117,6 +184,7 @@ function set_tab_status(){
 
         // Bind the click event handler
         $(this).on('click', 'a', function(e){
+            remove_markers();
             // Make the old tab inactive.
             $active.removeClass('active');
             $content.hide();
@@ -128,6 +196,13 @@ function set_tab_status(){
             // Make the tab active.
             $active.addClass('active');
             $content.show();
+
+            // if report page is selected, bind the remote report endpoint
+            if ( this.hash.endswith("#report") ){
+                bind_report();
+            }else{
+                unbind_report();
+            }
 
             // Prevent the anchor's default click action
             e.preventDefault();

@@ -142,3 +142,4 @@ def predict_by_user(user):
 if __name__ == "__main__":
     print predict_by_text("yinz cmu is indicative enough");
     print predict_by_user("brooklynhan");
+

@@ -5,6 +5,7 @@ Geolocation prediction xmlrpc server, using port: 8999
 
 import ujson as json
 from flask import Flask, request, render_template
+from time import gmtime, strftime
 import geotagger
 
 app = Flask(__name__)
@@ -51,6 +52,18 @@ def geolocate_web(sname, enable_cache = False):
 @app.route('/')
 def index():
     return render_template("index.html")
+
+@app.route('/geo')
+def geo():
+    return render_template("geo.html")
+
+@app.route('/report', methods=['post'])
+def get_report():
+    data = request.form['last_time_stamp']
+    result_dict = dict() 
+    cur_time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    result_dict["last_time_stamp"] = cur_time_str
+    return json.dumps(result_dict)
 
 @app.route('/text', methods=['post'])
 def geolocate_by_text():
