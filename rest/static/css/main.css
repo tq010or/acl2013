@@ -66,8 +66,10 @@ p {
 }
 
 .leaflet-marker-icon .number {
-    position: relative;
-    top:-42px;
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    text-align: center;
 }
 
 li {

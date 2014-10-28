@@ -101,6 +101,7 @@ function bind_report(){
             });
 }
 
+
 function gen_word_cloud(wc_id, result_id, json_obj){
     $(result_id).html(json_obj["summary"]);
     var liw_dict = json_obj["liw"];
