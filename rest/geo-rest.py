@@ -13,23 +13,23 @@ app = Flask(__name__)
 def generate_summary(gt_dict):
     summary = None
     if gt_dict["oconf"] == 2:
-        summary = "Summary: <b>{0}</b> has <b>{1}</b> recent status updates. <b>{2}</b> of them are geotagged tweets and the home location is in <b>{3}</b>. Our prediction error distance is <b>{4}</b> kilometers.".format(
+        summary = "Summary: <b>{0}</b> has <b>{1}</b> recent status updates. </br> <b>{2}</b> of them are geotagged tweets and the home location is in <b>{3}</b>. </br> Our prediction error distance is <b>{4}</b> kilometers.".format(
                 gt_dict["sname"],
                 len(gt_dict["tweets"]),
                 len(gt_dict["footprints"]),
-                city_adapter.convert_readable(gt_dict["oc"]),
+                gt_dict["oc"],
                 gt_dict["errdist"],
                 )
     elif gt_dict["oconf"] == 1:
-        summary = "Summary: <b>{0}</b> has <b>{1}</b> recent status updates. <b>{2}</b> of them are geotagged tweets and the most frequent location (<b>{3}</b>) is assumed to be the home location. Our prediction error distance is <b>{4}</b> kilometers.".format(
+        summary = "Summary: <b>{0}</b> has <b>{1}</b> recent status updates. </br> <b>{2}</b> of them are geotagged tweets and the most frequent location (<b>{3}</b>) is assumed to be the home location. </br> Our prediction error distance is <b>{4}</b> kilometers.".format(
                 gt_dict["sname"],
                 len(gt_dict["tweets"]),
                 len(gt_dict["footprints"]),
-                city_adapter.convert_readable(gt_dict["oc"]),
+                gt_dict["oc"],
                 gt_dict["errdist"],
                 )
     else:
-        summary = "Summary: <b>{0}</b> has <b>{1}</b> recent status updates. None of them is geotagged.".format(gt_dict["sname"], len(gt_dict["tweets"]))
+        summary = "Summary: <b>{0}</b> has <b>{1}</b> recent status updates. </br> None of them is geotagged.".format(gt_dict["sname"], len(gt_dict["tweets"]))
     return summary
 
 
@@ -37,7 +37,7 @@ def tailor_web_output(gt_dict):
     if gt_dict["error"]:
         return json.dumps(gt_dict)
     gt_dict["summary"] = generate_summary(gt_dict)
-    gt_dict["pc"] = city_adapter.convert_readable(gt_dict["pc"])
+    gt_dict["pc"] = gt_dict["pc"]
     del gt_dict["rname"]
     gt_dict["tweets"] = gt_dict["tweets"][:10]
     return json.dumps(gt_dict)
@@ -69,13 +69,14 @@ def get_report():
 def geolocate_by_text():
     data = request.form['text']
     result_dict = geotagger.predict_by_text(data);
+    result_dict["summary"] = "Summary: The predicted city is: <b>" + result_dict["pc"] + "</b>";
     return json.dumps(result_dict)
 
 @app.route('/user', methods=['post'])
 def geolocate_by_user():
     data = request.form['user']
     result_dict = geotagger.predict_by_user(data);
-    return json.dumps(result_dict)
+    return tailor_web_output(result_dict);
 
 
 if __name__ == '__main__':

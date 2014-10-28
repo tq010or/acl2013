@@ -86,7 +86,8 @@ def geolocate(data, enable_cache = True):
     
 
     # sequential classifier
-    text_pred = text_decoder.predict(feature_adapter.extract_text_features(gt_dict["tweets"]))
+    text_features = feature_adapter.extract_text_features(gt_dict["tweets"])
+    text_pred = text_decoder.predict(text_features)
     loc_pred = loc_decoder.predict(feature_adapter.extract_ngram_features(gt_dict["loc"]))
     tz_pred = tz_decoder.predict(feature_adapter.extract_ngram_features(gt_dict["tz"]))
     print "L0 predictions:", text_pred, loc_pred, tz_pred
@@ -106,6 +107,7 @@ def geolocate(data, enable_cache = True):
     slr_lat, slr_lon = lib_grid_search.lookup_coords(slr_pred)
 
     print "L1 prediction coordinates:", slr_lat, slr_lon
+    gt_dict["liw"] = text_features
     gt_dict["plat"] = slr_lat
     gt_dict["plon"] = slr_lon
     gt_dict["errdist"] = int(gcd_dist.calc_dist_degree(slr_lat, slr_lon, gt_dict["olat"], gt_dict["olon"])) if gt_dict["oc"] else None
@@ -119,18 +121,18 @@ def geolocate(data, enable_cache = True):
     return gt_dict
 
 def predict_by_text(text):
-    print text
     features = feature_adapter.extract_text_features([text])
     print features
     text_pred = text_decoder.predict(features)
     print text_pred
     gt_dict = dict()
     slr_lat, slr_lon = lib_grid_search.lookup_coords(text_pred)
+    gt_dict["liw"] = features
     gt_dict["pc"] = text_pred
     gt_dict["plat"] = slr_lat
     gt_dict["plon"] = slr_lon
-    gt_dict["errdist"] = None
-    gt_dict["error"] = ""
+    gt_dict["errdist"] = "";
+    gt_dict["error"] = None;
     gt_dict["text_pred"] = text_pred
     gt_dict["loc_pred"] = ""
     gt_dict["tz_pred"] = ""

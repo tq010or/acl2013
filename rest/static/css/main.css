@@ -79,3 +79,8 @@ li {
     height: 400px;
     overflow: auto;
 }
+
+.word_cloud {
+    height: 400px;
+    width: 100%;
+}
