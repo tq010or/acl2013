@@ -17,13 +17,13 @@ Quick Start
 * ujson (https://pypi.python.org/pypi/ujson) 
 * twython library (git://github.com/ryanmcgrath/twython.git)
 * liblinear (http://www.csie.ntu.edu.tw/~cjlin/cgi-bin/liblinear.cgi?+http://www.csie.ntu.edu.tw/~cjlin/liblinear+zip)
+* Flask (for running new server) pip install flask
 
 
 2. Set environment variable.
 Suppose you are using Ubuntu Linux and you have extracted the package to your home folder, e.g., /home/YOUR_NAME/acl2013.
 $ cd ~
-$ vim .bashrc 
-Add the following "exports" in /.bashrc
+Update the following "exports" in /home/YOUR_NAME/acl2013/rest/run.sh
 export PYTHONPATH=/home/YOUR_NAME/acl2013:$PYTHONPATH
 export geoloc=/home/YOUR_NAME/acl2013/geoloc
 
