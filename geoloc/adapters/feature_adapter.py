@@ -11,11 +11,19 @@ from geoloc.util import tokeniser
 t_tokeniser = tokeniser.MicroTokeniser()
 liw_set = set(json.load(open("{0}/data/world.englang.optimised.fea.json".format(pkg_path))))
 
+def strip_entity_tag(token):
+    if token.startswith("@"):
+        return token[1:]
+    elif token.startswith("#"):
+        return token[1:]
+    else:
+        return token
+
 def extract_text_features(tweets):
     fea_dict = dict()
     for tweet in tweets:
-        all_tokens = t_tokeniser.tokenise(tweet.lower())
-        tokens = [token for token in all_tokens if len(token) >= 3 and token.isalpha() and token in liw_set]
+        all_tokens = [strip_entity_tag(token) for token in t_tokeniser.tokenise(tweet.lower())]
+        tokens = [token for token in all_tokens if token and len(token) >= 3 and token.isalpha() and token in liw_set]
         for token in tokens:
             try:
                 fea_dict[token] += 1

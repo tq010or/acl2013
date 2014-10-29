@@ -4,7 +4,7 @@ html {
     background:#fff;
     color:#000;
     font-family:sans-serif;
-    font-size:14px;
+    font-size:15px;
 }
 
 p {
@@ -85,4 +85,11 @@ li {
 .word_cloud {
     height: 400px;
     width: 100%;
+}
+
+.about_text {
+    padding: 5px;
+    font-family:sans-serif;
+    font-size:15px;
+    font-style: oblique;
 }

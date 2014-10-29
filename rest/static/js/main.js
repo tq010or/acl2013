@@ -38,15 +38,15 @@ function set_init_controls(){
     });
     wc_settings = {
         "size" : {
-            "grid" : 2, // word spacing, smaller is more tightly packed
+            "grid" : 1, // word spacing, smaller is more tightly packed
             "factor" : 0, // font resize factor, 0 means automatic
             "normalize" : false// reduces outliers for more attractive output
         },
         "options" : {
-            "rotationRatio" : 0, // 0 is all horizontal, 1 is all vertical
+            "rotationRatio" : 0.5,// 0 is all horizontal, 1 is all vertical
             "color" : "random-dark",
-            "printMultiplier" : 3,
-            "sort" : "highest"
+            "printMultiplier" : 1,
+            "sort" : "lowest"
         },
         "font" : "Futura, Helvetica, sans-serif",
         "shape" : "square"
@@ -255,7 +255,7 @@ function set_tab_status(){
 
         // Bind the click event handler
         $(this).on('click', 'a', function(e){
-            remove_markers();
+            //remove_markers();
             // Make the old tab inactive.
             $active.removeClass('active');
             $content.hide();
