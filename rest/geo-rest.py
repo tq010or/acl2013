@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Geolocation prediction xmlrpc server, using port: 8999
+Geolocation prediction using RESTful Flask framework
 """
 
 import ujson as json
