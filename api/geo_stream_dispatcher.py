@@ -13,6 +13,8 @@ from twython import TwythonStreamer
 import twython
 import time
 import sys
+from datetime import datetime
+import requests
 
 class MyStreamer(TwythonStreamer):
     def on_success(self, data):
@@ -22,8 +24,12 @@ class MyStreamer(TwythonStreamer):
             if data['coordinates']["type"] == "Point":
                 text = data["text"]
                 if langid.classify(text)[0] == 'en':
-                    uid = data["user"]["screen_name"]
-                    print uid
+                    sname = data["user"]["screen_name"]
+                    ts = datetime.now().strftime("%y%m%d%H%M")
+                    coords = data['coordinates']["coordinates"]
+                    lat = coords[1]
+                    lon = coords[0]
+                    print ts, sname, lat, lon
 
     def on_error(self, status_code, data):
         pass
@@ -33,7 +39,10 @@ class MyStreamer(TwythonStreamer):
 
 def monitor_stream():
     # reading credentials
-    credentials = sys.argv[1].split(" ")
+    credentials = None
+    with open(sys.argv[1]) as fr:
+        for l in fr:
+            credentials = l.strip().split(" ")
     APP_KEY = credentials[0]
     APP_SECRET = credentials[1]
     OAUTH_TOKEN = credentials[2]
@@ -41,10 +50,11 @@ def monitor_stream():
 
     #TODO: incremental backup time interval?
     back_up_interval = 90
+    client_args = {'headers': {'Accept-Encoding': 'deflate, gzip'}}
+    #client_args = {'headers': {'User-Agent': 'geoloc', 'Accept-Encoding': 'deflate, gzip', 'Host': 'api.twitter.com'}}
     while True:
         try:
-            #TODO: Accept-Encoding: deflate, gzip
-            stream = MyStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+            stream = MyStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET, client_args = client_args)
             stream.statuses.filter(locations='-180,-90,180,90')
         except twython.TwythonRateLimitError:
             time.sleep(back_up_interval)
@@ -52,8 +62,10 @@ def monitor_stream():
             time.sleep(back_up_interval)
         except twython.TwythonError:
             time.sleep(back_up_interval)
-        except:
-            time.sleep(30)
+        except requests.exceptions.ChunkedEncodingError:
+            pass
+        except requests.exceptions.ConnectionError:
+            time.sleep(back_up_interval)
 
 def main():
     monitor_stream()
