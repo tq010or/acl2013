@@ -8,6 +8,8 @@ Predict users and save both input and result on disk in .gz format
 """
 
 import ujson as json
+import os
+pkg_path = os.environ["geoloc"]
 import langid
 from twython import TwythonStreamer
 import twython
@@ -15,6 +17,9 @@ import time
 import sys
 from datetime import datetime
 import requests
+
+sname_list = []
+sname_limit = 100
 
 class MyStreamer(TwythonStreamer):
     def on_success(self, data):
@@ -29,7 +34,11 @@ class MyStreamer(TwythonStreamer):
                     coords = data['coordinates']["coordinates"]
                     lat = coords[1]
                     lon = coords[0]
-                    print ts, sname, lat, lon
+                    #print ts, sname, lat, lon
+                    if len(sname_list) <= sname_limit:
+                        sname_list.append(sname)
+                    else:
+                        raise BufferError
 
     def on_error(self, status_code, data):
         pass
@@ -39,10 +48,7 @@ class MyStreamer(TwythonStreamer):
 
 def monitor_stream():
     # reading credentials
-    credentials = None
-    with open(sys.argv[1]) as fr:
-        for l in fr:
-            credentials = l.strip().split(" ")
+    credentials = [l.strip() for l in open("{0}/data/credential.txt".format(pkg_path))]
     APP_KEY = credentials[0]
     APP_SECRET = credentials[1]
     OAUTH_TOKEN = credentials[2]
@@ -66,9 +72,17 @@ def monitor_stream():
             pass
         except requests.exceptions.ConnectionError:
             time.sleep(back_up_interval)
+        except BufferError:
+            break
+
+def get_sname_list(sname_number):
+    global sname_limit, sname_list
+    sname_limit = sname_number
+    monitor_stream()
+    return sname_list
 
 def main():
-    monitor_stream()
+    print get_sname_list(100)
 
 if __name__ == "__main__":
     main()

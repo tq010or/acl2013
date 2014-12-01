@@ -3,12 +3,17 @@
 Geolocation prediction using RESTful Flask framework
 """
 
+import os
+pkg_path = os.environ["geoloc"]
 import ujson as json
 from flask import Flask, request, render_template
 from time import gmtime, strftime
 import geotagger
+from threading import Lock
+from geoloc.adapters import geo_stream_dispatcher
 
 app = Flask(__name__)
+lock = Lock()
 
 def generate_summary(gt_dict):
     summary = None
@@ -42,6 +47,19 @@ def tailor_web_output(gt_dict):
     gt_dict["tweets"] = gt_dict["tweets"][:10]
     return json.dumps(gt_dict)
 
+def tailor_report_output(gt_dict):
+    if gt_dict["error"]:
+        return json.dumps(gt_dict)
+    summary = None
+    if gt_dict["oconf"] == 2:
+        summary = "<b>{0}</b> is predicted to <b>{1}</b> and the true location is <b>{2}</b>. The prediction error distance is <b>{3}</b> km based on <b>{4}</b> tweets in prediction and <b>{5}</b> geotagged tweets for verification".format(gt_dict["sname"], gt_dict["pc"], gt_dict["oc"], gt_dict["errdist"], len(gt_dict["tweets"]), len(gt_dict["footprints"]))
+    else:
+        summary = "<b>{0}</b> is predicted to <b>{1}</b> and the estimated true location is <b>{2}</b>. The prediction error distance is <b>{3}</b> km based on <b>{4}</b> tweets in prediction and <b>{5}</b> geotagged tweets as ground truth data".format(gt_dict["sname"], gt_dict["pc"], gt_dict["oc"], gt_dict["errdist"], len(gt_dict["tweets"]), len(gt_dict["footprints"]))
+    gt_dict["summary"] = summary
+    gt_dict["pc"] = gt_dict["pc"]
+    del gt_dict["rname"]
+    gt_dict["tweets"] = gt_dict["tweets"][:10]
+    return json.dumps(gt_dict)
 
 def geolocate_web(sname, enable_cache = False):
     """    Service method for web demo    """
@@ -57,13 +75,19 @@ def index():
 def geo():
     return render_template("geo.html")
 
+cache_data = []
 @app.route('/report', methods=['post'])
 def get_report():
-    data = request.form['last_time_stamp']
-    result_dict = dict() 
+    global cache_data
+    data = None
+    with lock:
+        if not cache_data:
+            cache_data = geo_stream_dispatcher.get_sname_list(100)
+        data = cache_data.pop()
+    result_dict = geotagger.predict_by_user(data);
     cur_time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime())
     result_dict["last_time_stamp"] = cur_time_str
-    return json.dumps(result_dict)
+    return tailor_report_output(result_dict);
 
 @app.route('/text', methods=['post'])
 def geolocate_by_text():
@@ -80,4 +104,4 @@ def geolocate_by_user():
 
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0', port = int(7000), debug = False)
+    app.run(host = '0.0.0.0', port = int(7000), debug = True)

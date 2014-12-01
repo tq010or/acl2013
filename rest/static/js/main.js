@@ -12,7 +12,7 @@ var info_dict = {
 };
 
 var TIMEOUT = 5000;
-var REPORT_SIZE = 1;
+var REPORT_SIZE = 20;
 var last_time_stamp = null;
 var wc_settings = null;
 
@@ -63,16 +63,15 @@ function bind_report(){
             function(data, textStatus){
                 var report_obj = JSON.parse(data);
                 last_time_stamp = report_obj["last_time_stamp"];
-                //TODO: add pred results into lists
+                summary = report_obj["summary"];
                 var $items = $('#report_list').children();
                 if ( $items.length > REPORT_SIZE) 
                     $items[$items.length - 1].remove();
                 $("#report_list").prepend(
                         $('<li>').append(
-                                $('<span>').append(last_time_stamp)
+                                $('<span>').append(last_time_stamp + summary)
                                 ));
-                console.log(last_time_stamp);
-                //TODO: update stats, using D3 or other visualisation tools?
+                console.log(report_obj);
                 timer = setTimeout(bind_report, TIMEOUT);
             });
 }
@@ -87,16 +86,15 @@ function bind_report(){
             function(data, textStatus){
                 var report_obj = JSON.parse(data);
                 last_time_stamp = report_obj["last_time_stamp"];
-                //TODO: add pred results into lists
-                var $items = $('#report_list').children();
-                if ( $items.length > REPORT_SIZE) 
-                    $items[$items.length - 1].remove();
+                summary = report_obj["summary"];
+                var li_num = $('#report_list').length;
+                if ( li_num > REPORT_SIZE) 
+                    $("#report_list li").first().remove();
+                //TODO: overlap between results + not rendering html tags
                 $("#report_list").prepend(
-                        $('<li>').append(
-                                $('<span>').append(last_time_stamp)
-                                ));
+                        $('<li>').text(last_time_stamp + summary)
+                        );
                 console.log(last_time_stamp);
-                //TODO: update stats, using D3 or other visualisation tools?
                 timer = setTimeout(bind_report, TIMEOUT);
             });
 }
