@@ -65,18 +65,20 @@ function bind_report(){
     $.post('/report', 
             {last_time_stamp: last_time_stamp},
             function(data, textStatus){
-                var report_obj = JSON.parse(data);
-                last_time_stamp = report_obj["last_time_stamp"];
-                summary = report_obj["summary"];
+                result_json = data;
+                json_obj = JSON.parse(data);
+                last_time_stamp = json_obj["last_time_stamp"];
+                summary = json_obj["summary"];
                 var li_num = $('#report_list').length;
                 if ( li_num > REPORT_SIZE) 
                     $("#report_list li").first().remove();
                 $("#report_list").prepend(
                         $('<li>').html(last_time_stamp + summary)
                         );
-                var accuracy = (report_obj["correct"] / (report_obj["correct"] + report_obj["wrong"]));
-                var result = "Overall performance: </br>Correct predictions: " + report_obj["correct"] + "</br>incorrect predictions: " + report_obj["wrong"] + "</br>Accuracy: " + Number(accuracy.toFixed(4));
+                var accuracy = (json_obj["correct"] / (json_obj["correct"] + json_obj["wrong"]));
+                var result = "Overall performance: </br>Correct predictions: " + json_obj["correct"] + "</br>incorrect predictions: " + json_obj["wrong"] + "</br>Accuracy: " + Number(accuracy.toFixed(4));
                 $('#report_result').html(result);
+                update_markers(result_json);
                 timer = setTimeout(bind_report, TIMEOUT);
             });
 }
@@ -197,7 +199,7 @@ function create_markers(){
 }
 
 function update_markers(result_json){
-    console.log(result_json);
+    //console.log(result_json);
     // clear existing results
     remove_markers();
     // add new results on the map

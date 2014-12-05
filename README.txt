@@ -18,6 +18,7 @@ Quick Start
 * twython library (git://github.com/ryanmcgrath/twython.git)
 * liblinear (http://www.csie.ntu.edu.tw/~cjlin/cgi-bin/liblinear.cgi?+http://www.csie.ntu.edu.tw/~cjlin/liblinear+zip)
 * Flask (for running new server) pip install flask
+* Langid (for running new server) pip install langid
 
 
 2. Set environment variable.
@@ -39,23 +40,24 @@ access_token
 access_secret
 
 
-4. start the service
-Open 4 terminal windows, and start each of the service in the "classifier" folder.
-Alternatively, you can use "screen" command to simulate multiple terminals.
+4.1 start new RESTful service
+$ cd /home/YOUR_NAME/acl2013/rest/
+$ ./run.sh
+It is recommended to use "screen" command to simulate multiple terminals.
+
+4.2 set up old original server
 $ cd /home/YOUR_NAME/acl2013/geoloc/classifiers
 $ python text_xmlrpc_server.py 
 $ python loc_xmlrpc_server.py 
 $ python tz_xmlrpc_server.py 
 $ python geo_xmlrpc_server.py
 
-
-5. test the live service
+Test the live service
 This little demo geolocates authors
 $ cd /home/YOUR_NAME/acl2013/api
 $ python geoloc_cli.py
 
-
-6. test the website (currently only Google Chrome browser is supported).
+Test the website (currently only Google Chrome browser is supported).
 $ cd /home/YOUR_NAME/acl2013/web
 $ python web_app.py
 
