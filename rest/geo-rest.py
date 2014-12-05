@@ -14,6 +14,15 @@ from geoloc.adapters import geo_stream_dispatcher
 
 app = Flask(__name__)
 lock = Lock()
+req_lock = Lock()
+
+performance_log_folder = "./"
+suffix = ".tsl"
+correct = 0
+wrong = 0
+tsls = []
+max_tsls = 2
+prev_ts = strftime("%Y%m%d%H", gmtime())
 
 def generate_summary(gt_dict):
     summary = None
@@ -78,15 +87,25 @@ def geo():
 cache_data = []
 @app.route('/report', methods=['post'])
 def get_report():
-    global cache_data
+    global cache_data, correct, wrong, prev_ts
     data = None
-    with lock:
+    with req_lock:
         if not cache_data:
             cache_data = geo_stream_dispatcher.get_sname_list(100)
         data = cache_data.pop()
     result_dict = geotagger.predict_by_user(data);
-    cur_time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-    result_dict["last_time_stamp"] = cur_time_str
+    with lock:
+        if "oc" in result_dict and result_dict["oc"] == result_dict["pc"]:
+            correct += 1
+        else:
+            wrong += 1
+        cur_time_str = strftime("%Y%m%d%H", gmtime())
+        if cur_time_str != prev_ts:
+            update_pflog(cur_time_str)
+            prev_ts = cur_time_str
+        result_dict["last_time_stamp"] = strftime("%Y-%m-%d %H:%M:%S ", gmtime())
+        result_dict["correct"] = correct
+        result_dict["wrong"] = wrong
     return tailor_report_output(result_dict);
 
 @app.route('/text', methods=['post'])
@@ -102,6 +121,25 @@ def geolocate_by_user():
     result_dict = geotagger.predict_by_user(data);
     return tailor_web_output(result_dict);
 
+def init_server():
+    global tsls, correct, wrong
+    tsls = sorted([pflog for pflog in os.listdir(performance_log_folder) if pflog.endswith(suffix)])
+    if tsls:
+        with open(tsls[-1]) as fr:
+            for l in fr:
+                jobj = json.loads(l)
+                correct = jobj["correct"]
+                wrong = jobj["wrong"]
+
+def update_pflog(ts):
+    jobj = dict()
+    jobj["correct"] = correct
+    jobj["wrong"] = wrong
+    json.dump(jobj, open("{0}{1}{2}".format(performance_log_folder, ts, suffix), "w"))
+    tsls = sorted([pflog for pflog in os.listdir(performance_log_folder) if pflog.endswith(suffix)])
+    if len(tsls) > max_tsls:
+        os.remove(tsls[0])
 
 if __name__ == '__main__':
+    init_server()
     app.run(host = '0.0.0.0', port = int(7000), debug = True)

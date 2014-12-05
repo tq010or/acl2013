@@ -4,6 +4,13 @@
     <title>Text-based Geolocation Prediction</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}"/>
+    <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.awesomeCloud-0.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/geo_icon.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
     <div id="map"></div>
@@ -49,15 +56,12 @@ Not seen any non-league footy yet this season so looks like a bit of @AshtonUnit
         </div>
         <div id='report' class="tab_content">
             <p>
-            This is a <b>beta</b> live report page. The motivation is to evaluate the geolocation system accuracy over time.
             The system monitors Twitter Streaming API to identify users with geotagged tweets, then it crawls up-to 200 recent tweets from users and predicts the users' geolocations on basis of text data.
-            The geotagged tweets refer to tweets with GPS coordinates embedded in the tweet JSON metadata. 
             The system currently makes use of tweet text, user declared location and user declared timezone information for location prediction.
-            We only show users with at least 10 geotagged tweets and more than 50% of geotagged tweets are from one region.
-            This ensures GPS-derived user ground truth locations in high quality (although maybe biased).
+            Due to limited network bandwidth, we only crawl and predict users every 5 seconds.
             </p>
             <p>
-                <span id="report_result" class="pred_result"></span>
+                <div id="report_result">Updating ...</div>
                 <ul id="report_list"></ul>
             </p>
         </div>
@@ -75,14 +79,6 @@ Not seen any non-league footy yet this season so looks like a bit of @AshtonUnit
             </p>
         </div>
     </div>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}"/>
-    <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/jquery.awesomeCloud-0.2.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/geo_icon.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
 

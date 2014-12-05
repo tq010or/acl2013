@@ -73,12 +73,12 @@ p {
 }
 
 li {
-    height:20px;
+    display: block;
 }
 
 #report_list {
     border: 1px solid #666;
-    height: 400px;
+    height: 600px;
     overflow: auto;
 }
 

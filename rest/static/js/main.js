@@ -57,25 +57,6 @@ function unbind_report(){
     clearTimeout(timer);
 }
 
-function bind_report(){
-    $.post('/report', 
-            {last_time_stamp: last_time_stamp},
-            function(data, textStatus){
-                var report_obj = JSON.parse(data);
-                last_time_stamp = report_obj["last_time_stamp"];
-                summary = report_obj["summary"];
-                var $items = $('#report_list').children();
-                if ( $items.length > REPORT_SIZE) 
-                    $items[$items.length - 1].remove();
-                $("#report_list").prepend(
-                        $('<li>').append(
-                                $('<span>').append(last_time_stamp + summary)
-                                ));
-                console.log(report_obj);
-                timer = setTimeout(bind_report, TIMEOUT);
-            });
-}
-
 function unbind_report(){
     clearTimeout(timer);
 }
@@ -90,11 +71,12 @@ function bind_report(){
                 var li_num = $('#report_list').length;
                 if ( li_num > REPORT_SIZE) 
                     $("#report_list li").first().remove();
-                //TODO: overlap between results + not rendering html tags
                 $("#report_list").prepend(
-                        $('<li>').text(last_time_stamp + summary)
+                        $('<li>').html(last_time_stamp + summary)
                         );
-                console.log(last_time_stamp);
+                var accuracy = (report_obj["correct"] / (report_obj["correct"] + report_obj["wrong"]));
+                var result = "Overall performance: </br>Correct predictions: " + report_obj["correct"] + "</br>incorrect predictions: " + report_obj["wrong"] + "</br>Accuracy: " + Number(accuracy.toFixed(4));
+                $('#report_result').html(result);
                 timer = setTimeout(bind_report, TIMEOUT);
             });
 }
