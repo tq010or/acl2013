@@ -67,6 +67,10 @@ function bind_report(){
             function(data, textStatus){
                 result_json = data;
                 json_obj = JSON.parse(data);
+                if (json_obj["footprints"] == 'undefined'){
+                    timer = setTimeout(bind_report, TIMEOUT);
+                    return;
+                }
                 last_time_stamp = json_obj["last_time_stamp"];
                 summary = json_obj["summary"];
                 var li_num = $('#report_list').length;
@@ -76,7 +80,7 @@ function bind_report(){
                         $('<li>').html(last_time_stamp + summary)
                         );
                 var accuracy = (json_obj["correct"] / (json_obj["correct"] + json_obj["wrong"]));
-                var result = "Overall performance: </br>Correct predictions: " + json_obj["correct"] + "</br>incorrect predictions: " + json_obj["wrong"] + "</br>Accuracy: " + Number(accuracy.toFixed(4));
+                var result = "Correct predictions: " + json_obj["correct"] + "</br>Incorrect predictions: " + json_obj["wrong"] + "</br>Accuracy: " + Number(accuracy.toFixed(4));
                 $('#report_result').html(result);
                 update_markers(result_json);
                 timer = setTimeout(bind_report, TIMEOUT);
