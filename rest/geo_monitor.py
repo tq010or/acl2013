@@ -7,7 +7,7 @@ Geolocate users and save results;
 import os
 pkg_path = os.environ["geoloc"]
 import ujson as json
-from time import gmtime, strftime
+from time import gmtime, strftime, sleep
 from geoloc.adapters import geo_stream_dispatcher
 import geotagger
 
@@ -19,8 +19,9 @@ def main():
     while True:
         cache_data = geo_stream_dispatcher.get_sname_list(CACHED_USERS)
         for sname in cache_data:
+            # to save bandwidth and Twitter API rate limit
+            sleep(5)
             result_dict = geotagger.predict_by_user(sname)
-
             #TODO: shall we save them to other places for further analysis?
             # skip users far from metro cities
             if "oc" not in result_dict:
