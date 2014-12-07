@@ -11,10 +11,11 @@ var info_dict = {
     "OTHER": "Unknown error"
 };
 
-var TIMEOUT = 5000;
+var TIMEOUT = 30000;
 var REPORT_SIZE = 20;
 var last_time_stamp = null;
 var wc_settings = null;
+var prev_sname = null;
 
 $(document).ready(function(){
     init();
@@ -67,22 +68,21 @@ function bind_report(){
             function(data, textStatus){
                 result_json = data;
                 json_obj = JSON.parse(data);
-                if (json_obj["footprints"] == 'undefined'){
-                    timer = setTimeout(bind_report, TIMEOUT);
-                    return;
+                if (json_obj["sname"] != prev_sname){
+                    prev_sname = json_obj["sname"]
+                    last_time_stamp = json_obj["last_time_stamp"];
+                    summary = json_obj["summary"];
+                    var li_num = $('#report_list').length;
+                    if ( li_num > REPORT_SIZE) 
+                        $("#report_list li").first().remove();
+                    $("#report_list").prepend(
+                            $('<li>').html(last_time_stamp + summary)
+                            );
+                    var accuracy = (json_obj["correct"] / (json_obj["correct"] + json_obj["wrong"]));
+                    var result = "Correct predictions: " + json_obj["correct"] + "</br>Incorrect predictions: " + json_obj["wrong"] + "</br>Accuracy: " + Number(accuracy.toFixed(4));
+                    $('#report_result').html(result);
+                    update_markers(result_json);
                 }
-                last_time_stamp = json_obj["last_time_stamp"];
-                summary = json_obj["summary"];
-                var li_num = $('#report_list').length;
-                if ( li_num > REPORT_SIZE) 
-                    $("#report_list li").first().remove();
-                $("#report_list").prepend(
-                        $('<li>').html(last_time_stamp + summary)
-                        );
-                var accuracy = (json_obj["correct"] / (json_obj["correct"] + json_obj["wrong"]));
-                var result = "Correct predictions: " + json_obj["correct"] + "</br>Incorrect predictions: " + json_obj["wrong"] + "</br>Accuracy: " + Number(accuracy.toFixed(4));
-                $('#report_result').html(result);
-                update_markers(result_json);
                 timer = setTimeout(bind_report, TIMEOUT);
             });
 }

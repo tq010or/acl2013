@@ -7,22 +7,23 @@ import os
 pkg_path = os.environ["geoloc"]
 import ujson as json
 from flask import Flask, request, render_template
-from time import gmtime, strftime
+from time import gmtime, strftime, sleep
 import geotagger
 from threading import Lock
 from geoloc.adapters import geo_stream_dispatcher
 
 app = Flask(__name__)
 lock = Lock()
-req_lock = Lock()
 
-performance_log_folder = "./"
+log_folder = "./log"
 suffix = ".tsl"
 correct = 0
 wrong = 0
 tsls = []
 max_tsls = 2
 prev_ts = strftime("%Y%m%d%H", gmtime())
+cache_data = []
+result_data = []
 
 def generate_summary(gt_dict):
     summary = None
@@ -84,28 +85,35 @@ def index():
 def geo():
     return render_template("geo.html")
 
-cache_data = []
 @app.route('/report', methods=['post'])
 def get_report():
-    global cache_data, correct, wrong, prev_ts
-    data = None
-    with req_lock:
-        if not cache_data:
-            cache_data = geo_stream_dispatcher.get_sname_list(100)
-        data = cache_data.pop()
-    result_dict = geotagger.predict_by_user(data);
-    with lock:
-        if "oc" in result_dict and result_dict["oc"] == result_dict["pc"]:
-            correct += 1
-        else:
-            wrong += 1
-        cur_time_str = strftime("%Y%m%d%H", gmtime())
-        if cur_time_str != prev_ts:
-            update_pflog(cur_time_str)
-            prev_ts = cur_time_str
-        result_dict["last_time_stamp"] = strftime("%Y-%m-%d %H:%M:%S ", gmtime())
-        result_dict["correct"] = correct
-        result_dict["wrong"] = wrong
+    global correct, wrong, prev_ts
+    # read files that are fully written
+    cur_ts = strftime("%Y%m%d%H", gmtime())
+    cur_folder = os.path.join(log_folder, cur_ts)
+    plog_file = None
+    while True:
+        try:
+            plogs = [plog for plog in os.listdir(cur_folder) if plog.endswith(".json")]
+            plogs.sort(key=lambda x: os.stat(os.path.join(cur_folder, x)).st_mtime)
+            plog_file = os.path.join(cur_folder, plogs[-2])
+            print plog_file
+            break
+        except IndexError:
+            sleep(10)
+        except OSError:
+            sleep(30)
+    # judge results
+    result_dict = json.loads(open(plog_file).readline())
+    if result_dict["oc"] == result_dict["pc"]:
+        correct += 1
+    else:
+        wrong += 1
+
+    result_dict["last_time_stamp"] = strftime("%Y-%m-%d %H:%M:%S ", gmtime())
+    result_dict["correct"] = correct
+    result_dict["wrong"] = wrong
+
     return tailor_report_output(result_dict);
 
 @app.route('/text', methods=['post'])
@@ -123,7 +131,7 @@ def geolocate_by_user():
 
 def init_server():
     global tsls, correct, wrong
-    tsls = sorted([pflog for pflog in os.listdir(performance_log_folder) if pflog.endswith(suffix)])
+    tsls = sorted([pflog for pflog in os.listdir(log_folder) if pflog.endswith(suffix)])
     if tsls:
         with open(tsls[-1]) as fr:
             for l in fr:
@@ -135,8 +143,8 @@ def update_pflog(ts):
     jobj = dict()
     jobj["correct"] = correct
     jobj["wrong"] = wrong
-    json.dump(jobj, open("{0}{1}{2}".format(performance_log_folder, ts, suffix), "w"))
-    tsls = sorted([pflog for pflog in os.listdir(performance_log_folder) if pflog.endswith(suffix)])
+    json.dump(jobj, open("{0}{1}{2}".format(log_folder, ts, suffix), "w"))
+    tsls = sorted([pflog for pflog in os.listdir(log_folder) if pflog.endswith(suffix)])
     if len(tsls) > max_tsls:
         os.remove(tsls[0])
 

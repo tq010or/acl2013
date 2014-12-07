@@ -58,7 +58,11 @@ Not seen any non-league footy yet this season so looks like a bit of @AshtonUnit
             <p>
             The system monitors Twitter Streaming API to identify users with geotagged tweets, then it crawls up-to 200 recent tweets from users and predicts the users' geolocations on basis of text data.
             The system currently makes use of tweet text, user declared location and user declared timezone information for location prediction.
-            Due to limited network bandwidth, we further sub-sample Twitter users in the stream and it usually takes 30 seconds to crawl and predict users (depending on network speed as well).
+            The ground truth data is based on GPS labels embedded in tweets.
+
+            Due to limited network bandwidth, we sub-sample Twitter users in the stream and it usually takes 30 seconds to crawl and predict users depending on the network speed.
+            Additionally, to ensure the quality of evaluation, we only use users with at least 10 geotagged tweets and 50% of geotagged tweets are from one city.
+            As a result, the overall update frequency of report page is more than one minute.
             </p>
             <p>
                 <div id="report_result">Updating ...</div>
