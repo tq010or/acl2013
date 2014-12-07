@@ -11,7 +11,7 @@ var info_dict = {
     "OTHER": "Unknown error"
 };
 
-var TIMEOUT = 30000;
+var TIMEOUT = 10000;
 var REPORT_SIZE = 20;
 var last_time_stamp = null;
 var wc_settings = null;

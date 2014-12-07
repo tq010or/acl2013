@@ -26,7 +26,7 @@ def main():
             if "oc" not in result_dict:
                 continue
             # skip users without coherent ground truth locations
-            if result_dict["oconf"] == 2:
+            if result_dict["oconf"] != 2:
                 continue
 
             cur_ts = strftime("%Y%m%d%H", gmtime())
